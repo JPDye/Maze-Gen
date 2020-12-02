@@ -1,8 +1,9 @@
+// Standard imports
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 
-use std::collections::HashMap;
-
+// Self imports
 pub type HardCellLink = Rc<RefCell<Cell>>;
 pub type SoftCellLink = Weak<RefCell<Cell>>;
 
@@ -42,6 +43,13 @@ impl Cell {
         rc
     }
 
+    /// Return the neighbour that lies in the specified Direction.
+    pub fn get_neighbour(&self, d: Direction) -> Option<HardCellLink> {
+        let nb_weak = self.neighbours.get(&d).unwrap().as_ref().unwrap();
+        let nb_rc = nb_weak.upgrade().unwrap();
+        Some(nb_rc)
+    }
+
     /// Return a Vector containing all Directions a Cell exists in.
     pub fn get_neighbours(&self) -> Vec<Direction> {
         let mut res = Vec::new();
@@ -51,6 +59,11 @@ impl Cell {
             }
         }
         res
+    }
+
+    /// Return true if a neighbour exists in a specified direction.
+    pub fn neighbour_exists(&self, d: Direction) -> bool {
+        self.neighbours.get(&d).unwrap().is_some()
     }
 
     /// Return the Directions of neighbours the current Cell is linked to.
@@ -69,6 +82,22 @@ impl Cell {
     /// Return true if Cell is linked to a neighbour in the given Direction. Otherwise, return false.
     pub fn is_linked(&self, d: Direction) -> bool {
         self.links.contains(&d)
+    }
+
+    /// Link the currenct Cell with the provided Cell if the given Cell is a neighbour.
+    pub fn link_using_ref(&mut self, other: &HardCellLink) {
+        let other = other.borrow();
+        let other = other.self_rc.as_ref().unwrap();
+
+        let mut other_dir = None;
+
+        for (dir, nb) in &self.neighbours {
+            if nb.as_ref().unwrap().ptr_eq(&other) {
+                other_dir = Some(*dir);
+            }
+        }
+
+        self.link(other_dir.unwrap());
     }
 
     /// Link the current Cell with it's neighbour in given Direction. Also links neighbour to current Cell.
