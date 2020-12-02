@@ -1,5 +1,10 @@
 // External imports
+//
+// Randomness
 use rand::Rng;
+
+// Image Processing
+use image;
 
 // Std imports
 use std::fmt;
@@ -51,9 +56,15 @@ impl RectGrid {
         let cell = self.grid.get(row * self.cols + col)?;
         Some(Rc::clone(&cell))
     }
+    /// Given the index of a cell in the maze, return the cell that exists at that index.
+    pub fn get_cell(&self, index: usize) -> Option<HardCellLink> {
+        let cell_ref = self.grid.get(index)?;
+        let cell_rc = Rc::clone(&cell_ref);
+        Some(cell_rc)
+    }
 
     /// Given the row number and column number, return the Cell that exists at that position in the slice (or return None).
-    pub fn get_cell(&self, row: usize, col: usize) -> Option<HardCellLink> {
+    pub fn get_cell_row_col(&self, row: usize, col: usize) -> Option<HardCellLink> {
         let cell_ref = self.grid.get(row * self.cols + col)?;
         let cell_rc = Rc::clone(&cell_ref);
         Some(cell_rc)
@@ -93,6 +104,159 @@ impl RectGrid {
                 }
                 _ => None,
             },
+        }
+    }
+
+    /// Return an Iterator over Maze. Provides each cell, one by one.
+    pub fn iter_cell(&self) -> IterCell {
+        IterCell::new(self)
+    }
+
+    /// Return an Iterator over Maze. Provides each row, one by one.
+    pub fn iter_row(&self) -> IterRow {
+        IterRow::new(self)
+    }
+
+    /// Create an ImageBuffer from the maze.
+    pub fn create_image(&self, cell_size: usize, final_x: u32, final_y: u32) -> image::RgbImage {
+        // Set image dimensions.
+        let img_x = cell_size * self.rows + 1;
+        let img_y = cell_size * self.cols + 1;
+
+        // Set colours.
+        let bg = image::Rgb([255, 255, 255]);
+        let wall = image::Rgb([0, 0, 0]);
+
+        // Create ImageBuffer.
+        let mut imgbuf = image::ImageBuffer::from_pixel(img_x as u32, img_y as u32, bg);
+
+        for row in 0..self.rows {
+            for col in 0..self.cols {
+                let cell_rc = self.get_cell_row_col(row, col).unwrap();
+                let cell = cell_rc.borrow_mut();
+
+                let x1 = col * cell_size;
+                let y1 = row * cell_size;
+                let x2 = (col + 1) * cell_size;
+                let y2 = (row + 1) * cell_size;
+
+                // Draw Boundary. West wall.
+                for y in 0..self.cols * cell_size + 1 {
+                    imgbuf.put_pixel(0, y as u32, wall);
+                }
+
+                // Draw Boundary. South wall.
+                for y in 0..self.rows * cell_size + 1 {
+                    imgbuf.put_pixel(y as u32, (self.rows * cell_size) as u32, wall);
+                }
+
+                // Draw line for North wall of cell. From (x1, y1) to (x2, y1).
+                if !cell.is_linked(N) {
+                    for x in x1..x2 + 1 {
+                        imgbuf.put_pixel(x as u32, y1 as u32, wall);
+                    }
+                }
+
+                // Draw line for East wall of cell. (from x2, y1) to (x2, y2).
+                if !cell.is_linked(E) {
+                    for y in y1..y2 + 1 {
+                        imgbuf.put_pixel(x2 as u32, y as u32, wall);
+                    }
+                }
+            }
+        }
+        image::imageops::resize(
+            &imgbuf,
+            final_x,
+            final_y,
+            image::imageops::FilterType::Nearest,
+        )
+    }
+}
+
+/// Cell Iterator for the Maze.
+pub struct IterCell<'a> {
+    maze: &'a RectGrid,
+    index: Option<usize>,
+}
+
+impl<'a> IterCell<'a> {
+    pub fn new(maze: &'a RectGrid) -> Self {
+        IterCell { maze, index: None }
+    }
+}
+
+impl<'a> Iterator for IterCell<'a> {
+    type Item = HardCellLink;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.index.is_none() {
+            self.index = Some(0)
+        }
+        let cell_ref = self.maze.grid.get(self.index.unwrap())?;
+        let cell_rc = Rc::clone(cell_ref);
+        self.index = Some(self.index.unwrap().checked_add(1)?);
+        Some(cell_rc)
+    }
+}
+
+impl<'a> DoubleEndedIterator for IterCell<'a> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.index.is_none() {
+            self.index = Some(self.maze.grid.len() - 1);
+        }
+
+        let cell_ref = self.maze.grid.get(self.index.unwrap())?;
+        let cell_rc = Rc::clone(cell_ref);
+        self.index = Some(self.index.unwrap().checked_sub(1)?);
+        Some(cell_rc)
+    }
+}
+
+/// Row Iterator for the Maze.
+pub struct IterRow<'a> {
+    maze: &'a RectGrid,
+    row: Option<usize>,
+}
+
+impl<'a> IterRow<'a> {
+    pub fn new(maze: &'a RectGrid) -> Self {
+        IterRow { maze, row: None }
+    }
+}
+
+impl<'a> Iterator for IterRow<'a> {
+    type Item = &'a [HardCellLink];
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row.is_none() {
+            self.row = Some(0);
+        }
+
+        if self.row.unwrap() < self.maze.rows {
+            let start = self.row.unwrap() * self.maze.cols;
+            let end = start + self.maze.cols;
+            self.row = Some(self.row.unwrap() + 1);
+            Some(&self.maze.grid[start..end])
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a> DoubleEndedIterator for IterRow<'a> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.row.is_none() {
+            self.row = Some(self.maze.rows);
+        }
+
+        if self.row.unwrap() > 0 {
+            let start = (self.row.unwrap() - 1) * self.maze.cols;
+            let end = start + self.maze.cols;
+            self.row = Some(self.row.unwrap() - 1);
+            Some(&self.maze.grid[start..end])
+        } else {
+            None
         }
     }
 }
