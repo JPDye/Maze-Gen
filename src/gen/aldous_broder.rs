@@ -5,10 +5,11 @@ use rand::prelude::*;
 use crate::gen::generator::Generator;
 use crate::grids::rect_grid::RectGrid;
 
+#[derive(Debug)]
 pub struct AldousBroder {}
 
 impl Generator for AldousBroder {
-    fn gen(maze: &mut RectGrid) {
+    fn gen(&self, maze: &mut RectGrid) {
         let mut rng = thread_rng();
 
         let mut cell_rc = maze.get_random_cell().unwrap();

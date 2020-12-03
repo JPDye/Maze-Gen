@@ -6,10 +6,11 @@ use crate::cells::cell::Direction::*;
 use crate::gen::generator::Generator;
 use crate::grids::rect_grid::RectGrid;
 
+#[derive(Debug)]
 pub struct BinaryTree {}
 
 impl Generator for BinaryTree {
-    fn gen(maze: &mut RectGrid) {
+    fn gen(&self, maze: &mut RectGrid) {
         for cell_rc in maze.iter_cell() {
             // Get mutable access to the cell.
             let mut cell = cell_rc.borrow_mut();

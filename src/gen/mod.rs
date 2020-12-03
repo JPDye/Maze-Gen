@@ -1,4 +1,5 @@
 pub mod aldous_broder;
+pub mod backtracker;
 pub mod binary_tree;
 pub mod generator;
 pub mod hunt_and_kill;

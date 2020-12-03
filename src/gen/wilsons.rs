@@ -8,10 +8,11 @@ use crate::cells::cell::Direction;
 use crate::gen::generator::Generator;
 use crate::grids::rect_grid::RectGrid;
 
+#[derive(Debug)]
 pub struct Wilsons {}
 
 impl Generator for Wilsons {
-    fn gen(maze: &mut RectGrid) {
+    fn gen(&self, maze: &mut RectGrid) {
         // Initialise random number generator
         let mut rng = thread_rng();
 

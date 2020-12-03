@@ -9,10 +9,11 @@ use crate::cells::cell::{Direction::*, HardCellLink};
 use crate::gen::generator::Generator;
 use crate::grids::rect_grid::RectGrid;
 
+#[derive(Debug)]
 pub struct Sidewinder {}
 
 impl Generator for Sidewinder {
-    fn gen(maze: &mut RectGrid) {
+    fn gen(&self, maze: &mut RectGrid) {
         let mut rng = rand::thread_rng();
 
         // Iterate over every row
