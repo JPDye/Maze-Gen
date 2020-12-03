@@ -61,6 +61,38 @@ impl Cell {
         res
     }
 
+    /// Return a Vector containing all Directions a neighbour with no links exists in.
+    pub fn get_unlinked_neighbours(&self) -> Vec<Direction> {
+        let mut result = Vec::new();
+        let nb_dirs = self.get_neighbours();
+
+        for nb_dir in nb_dirs {
+            let nb_rc = self.get_neighbour(nb_dir).unwrap();
+            let nb = nb_rc.borrow();
+
+            if nb.get_linked().is_empty() {
+                result.push(nb_dir);
+            }
+        }
+        result
+    }
+
+    /// Return a Vector containing all Directions a neighbour with links exists in.
+    pub fn get_linked_neighbours(&self) -> Vec<Direction> {
+        let mut result = Vec::new();
+        let nb_dirs = self.get_neighbours();
+
+        for nb_dir in nb_dirs {
+            let nb_rc = self.get_neighbour(nb_dir).unwrap();
+            let nb = nb_rc.borrow();
+
+            if !nb.get_linked().is_empty() {
+                result.push(nb_dir);
+            }
+        }
+        result
+    }
+
     /// Return true if a neighbour exists in a specified direction.
     pub fn neighbour_exists(&self, d: Direction) -> bool {
         self.neighbours.get(&d).unwrap().is_some()
@@ -73,9 +105,9 @@ impl Cell {
 
     /// Return the Directions of neighbours the current Cell isn't linked to.
     pub fn get_unlinked(&self) -> Vec<Direction> {
-        vec![N, S, E, W]
+        self.get_neighbours()
             .into_iter()
-            .filter(|d| self.neighbours.get(&d).is_some() && !self.links.contains(d))
+            .filter(|d| !self.links.contains(d))
             .collect()
     }
 
