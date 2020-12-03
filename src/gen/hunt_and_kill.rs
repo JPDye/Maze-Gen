@@ -16,64 +16,55 @@ impl Generator for HuntAndKill {
         while cell_rc.is_some() {
             let mut cell = cell_rc.as_ref().unwrap().borrow_mut();
 
-            // Get list of directions unlinked neighbours lie in and pick one direction.
-            // If cell has an unvisited neighbour, link to it and set the neighbour as current cell.
-            // If the cell has no unvisited neighbours, find the first unvisited cell that borders one visited cell.
+            // Get a list of the current cells unvisited neighbours.
+            let nb_dirs = cell.get_unlinked_neighbours();
 
-            // let nb_dirs = cell.get_linked_neighbours();
-            let nb_dirs = cell.get_unlinked();
-
+            // Choose a random neighbour.
             match nb_dirs.choose(&mut rng) {
+                // If a neighbour was chosen (i.e. an unvisited neighbour existed), link to it.
                 Some(&nb_dir) => {
-                    // Get pointer to neighbour and link to current cell.
+                    let nb_rc = cell.get_neighbour(nb_dir);
 
+                    /*
                     println!(
-                        "NBs: {:?} --> Linked: {:?} --> Unlinked: {:?} --> Choice: {:?}",
+                        "Neighbours: {:?} --> Linked: {:?} --> Unlinked: {:?} --> Choice: {:?}",
                         cell.get_neighbours(),
                         cell.get_linked(),
                         cell.get_unlinked(),
                         nb_dir
                     );
+                     */
 
-                    let nb_rc = cell.get_neighbour(nb_dir);
                     cell.link(nb_dir);
 
-                    // Drop mutable reference to cell to allow cell_rc to be reassigned.
+                    // Drop the mutable reference to the cell to allow 'cell_rc' to be reassigned.
                     drop(cell);
                     cell_rc = nb_rc;
+
+                    // println!("{}", maze);
                 }
 
                 None => {
-                    // Drop mutable reference to cell to allow cell_rc to be reassigned.
+                    // Drop mutable reference to the cell to allow 'cell_rc' to be reassigned.
                     drop(cell);
                     cell_rc = None;
 
-                    // Find the first unvisited cell with a visited neighbour. First, loop over all cells.
                     for c_rc in maze.iter_cell() {
                         let mut c = c_rc.borrow_mut();
 
-                        let mut visited_neighbours = Vec::new();
-
-                        // If cell is unvisited, loop over all neighbours.
+                        // If the current cell is unvisited check if it has any visited neighborus.
                         if c.get_linked().is_empty() {
-                            for dir in c.get_neighbours() {
-                                let nb_rc = c.get_neighbour(dir).unwrap();
-                                let nb = nb_rc.borrow();
+                            let visited_neighbours = c.get_linked_neighbours();
 
-                                // If neighbour is visited, add to list of visited neighbours.
-                                if nb.get_linked().len() > 0 {
-                                    visited_neighbours.push(dir);
-                                }
-                            }
-
-                            // If there were visited neighbours, randomly pick one and link it to the current cell.
+                            // If there are visited neighbours, link to one of them and set current cell as next cell.
                             if !visited_neighbours.is_empty() {
                                 let nb_dir = visited_neighbours.choose(&mut rng).unwrap();
                                 c.link(*nb_dir);
 
-                                // Drop mutable reference to cell to allow cell_rc to be reassigned.
+                                // Drop mutable reference to the cell to allow 'c_rc' to be reassigned.
                                 drop(c);
                                 cell_rc = Some(c_rc);
+                                break;
                             }
                         }
                     }
