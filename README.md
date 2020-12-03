@@ -3,6 +3,13 @@
 Generate Mazes using a number of different algorithms. Colour them, animate them and display them as ASCII art, a png or a gif.
 
 ## Examples
+<details><summary>Hunt and Kill Algorithm</summary>
+  <p align="center">
+    <img src="https://github.com/JPDye/Maze-Gen/blob/main/imgs/hunt_and_kill.png" />
+  </p>
+  <p>Pick a random cell and perform a mostly random walk (avoid already visited cells). When a cell is reached where there are no unvisited neighbours, end the walk and start a new one at the first unvisited cell that borders a visited cell. Creates mazes with long, windy passages. Not the most efficient algorithm.</p>
+</details>
+
 <details><summary>Wilson's Algorithm</summary>
   <p align="center">
     <img src="https://github.com/JPDye/Maze-Gen/blob/66c506aced05a7ad7d2b199d78daf1928dd50b29/imgs/wilsons.png" />
