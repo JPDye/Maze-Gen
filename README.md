@@ -2,6 +2,10 @@
 
 Generate Mazes using a number of different algorithms. Colour them, animate them and display them as ASCII art, a png or a gif.
 
+  <p align="center">
+    <img src="https://github.com/JPDye/Maze-Gen/blob/main/imgs/colourful.png" />
+  </p>
+
 ## Examples
 <details><summary>Hunt and Kill Algorithm</summary>
   <p align="center">
@@ -39,5 +43,4 @@ Generate Mazes using a number of different algorithms. Colour them, animate them
 </details>
 
 ## ToDo
-* More maze generation algorithms (recursive backtracker, hunt and kill...)
-* Maze colouring (colour based on distance from given start cell)
+* Hexagon mazes.
