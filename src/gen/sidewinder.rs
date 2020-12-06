@@ -5,9 +5,7 @@ use rand::prelude::*;
 use std::rc::Rc;
 
 // Self imports
-use crate::cells::cell::{Direction::*, HardCellLink};
-use crate::gen::generator::Generator;
-use crate::grids::rect_grid::RectGrid;
+use crate::{Direction::*, Generator, HardCellLink, RectGrid};
 
 #[derive(Debug)]
 pub struct Sidewinder {}

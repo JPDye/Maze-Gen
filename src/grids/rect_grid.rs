@@ -1,17 +1,14 @@
 // External imports
-//
-// Randomness
-use rand::Rng;
-
-// Image Processing
+use colorous;
 use image;
+use rand::Rng;
 
 // Std imports
 use std::fmt;
 use std::rc::Rc;
 
 // Crate imports
-use crate::cells::cell::{Cell, Direction, Direction::*, HardCellLink};
+use crate::{Cell, Direction, Direction::*, HardCellLink};
 
 /// Represents a maze. Contains a Vector of Cells and provides methods for interacting with them.
 pub struct RectGrid {
@@ -117,8 +114,46 @@ impl RectGrid {
         IterRow::new(self)
     }
 
+    /// Breadth first search to generate array of distances for colouring.
+    pub fn get_distances(&self) -> Vec<Option<usize>> {
+        let mut distances = vec![None; self.cols * self.rows];
+
+        // Pick start cell and place it in "current" vec
+        let cell_rc = self.get_cell(0).expect("no cell at index 0");
+        let mut current = vec![(cell_rc, 0)];
+
+        let mut distance = 0;
+        while !current.is_empty() {
+            let mut next = Vec::new();
+
+            for (cell_rc, index) in &current {
+                distances[*index] = Some(distance);
+
+                let cell = cell_rc.borrow();
+                let nb_dirs = cell.get_linked();
+                for dir in nb_dirs {
+                    let nb_index = self.get_index_relative(*index, *dir).unwrap();
+                    let nb_rc = cell.get_neighbour(*dir).unwrap();
+
+                    if distances[nb_index].is_none() {
+                        next.push((nb_rc, nb_index));
+                    }
+                }
+            }
+            distance += 1;
+            current = next;
+        }
+        distances
+    }
+
     /// Create an ImageBuffer from the maze.
-    pub fn create_image(&self, cell_size: usize, final_x: u32, final_y: u32) -> image::RgbImage {
+    pub fn create_image(
+        &self,
+        cell_size: usize,
+        final_x: u32,
+        final_y: u32,
+        colour: bool,
+    ) -> image::RgbImage {
         // Set image dimensions.
         let img_x = cell_size * self.rows + 1;
         let img_y = cell_size * self.cols + 1;
@@ -127,8 +162,41 @@ impl RectGrid {
         let bg = image::Rgb([255, 255, 255]);
         let wall = image::Rgb([0, 0, 0]);
 
+        // Calculate distances.
+        let cycles = 1;
+        let mut max = 0;
+        let mut distances = Vec::new();
+        let gradient = colorous::MAGMA;
+
+        if colour {
+            distances = self.get_distances();
+            max = 1 + distances.iter().max().unwrap().unwrap() / cycles;
+        }
+
         // Create ImageBuffer.
         let mut imgbuf = image::ImageBuffer::from_pixel(img_x as u32, img_y as u32, bg);
+
+        if colour {
+            for row in 0..self.rows {
+                for col in 0..self.cols {
+                    let x1 = col * cell_size;
+                    let y1 = row * cell_size;
+                    let x2 = (col + 1) * cell_size;
+                    let y2 = (row + 1) * cell_size;
+
+                    // Draw cell background.
+                    let distance = distances[row * self.cols + col].unwrap();
+                    let colour = gradient.eval_rational(max - (distance % max), max);
+                    let cell_bg = image::Rgb([colour.r, colour.g, colour.b]);
+
+                    for x in x1..x2 {
+                        for y in y1..y2 {
+                            imgbuf.put_pixel(x as u32, y as u32, cell_bg);
+                        }
+                    }
+                }
+            }
+        }
 
         for row in 0..self.rows {
             for col in 0..self.cols {

@@ -2,8 +2,7 @@
 use rand::prelude::*;
 
 // Self imports
-use crate::gen::generator::Generator;
-use crate::grids::rect_grid::RectGrid;
+use crate::{Generator, RectGrid};
 
 #[derive(Debug)]
 pub struct AldousBroder {}

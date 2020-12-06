@@ -1,12 +1,8 @@
 // External imports
 use rand::prelude::*;
 
-// Standard imports
-
 // Self imports
-use crate::cells::cell::Direction;
-use crate::gen::generator::Generator;
-use crate::grids::rect_grid::RectGrid;
+use crate::{Direction, Generator, RectGrid};
 
 #[derive(Debug)]
 pub struct Wilsons {}

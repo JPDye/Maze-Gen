@@ -2,9 +2,7 @@
 use rand::prelude::*;
 
 // Self imports
-use crate::cells::cell::HardCellLink;
-use crate::gen::generator::Generator;
-use crate::grids::rect_grid::RectGrid;
+use crate::{Generator, HardCellLink, RectGrid};
 
 #[derive(Debug)]
 pub struct Backtracker {}

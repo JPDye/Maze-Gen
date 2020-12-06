@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 
-// Self imports
+// Type declarations
 pub type HardCellLink = Rc<RefCell<Cell>>;
 pub type SoftCellLink = Weak<RefCell<Cell>>;
 
