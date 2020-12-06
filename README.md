@@ -7,6 +7,13 @@ Generate Mazes using a number of different algorithms. Colour them, animate them
   </p>
 
 ## Examples
+<details><summary>Recursive Backtracker Algorithm</summary>
+  <p align="center">
+    <img src="https://github.com/JPDye/Maze-Gen/blob/main/imgs/colourful_backtracker.png" />
+  </p>
+  <p>Pick a random cell and perform a mostly random walk (avoid already visited cells). Store each visited cell on a stack. When a cell is reached that has no viable neighbours (they've already been visited), pop off the stack and repeat. Finish when the stack is empty. Faster than Hunt and Kill but it could rquire Rc's of every cell to be stored on the stack in the worst case. Like Hunt and Kill, it creates mazes with fewer dead ends and longer passages./p>
+</details>
+
 <details><summary>Hunt and Kill Algorithm</summary>
   <p align="center">
     <img src="https://github.com/JPDye/Maze-Gen/blob/main/imgs/colourful_hunt_and_kill.png" />
