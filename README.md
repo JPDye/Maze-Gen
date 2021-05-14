@@ -1,5 +1,7 @@
 # Maze-Gen
 
+### Being rewritten to improve speed and functionality. Check "rewrite" branch.
+
 Generate Mazes using a number of different algorithms. Colour them, animate them and display them as ASCII art, a png or a gif.
 
   <p align="center">
